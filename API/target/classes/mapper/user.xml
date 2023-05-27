@@ -1,0 +1,145 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssafy.trip.user.model.mapper.UserMapper">
+
+	<resultMap type="userDto" id="user">
+		<result column="user_id" property="userId"/>
+		<result column="user_name" property="userName"/>
+		<result column="email_id" property="emailId"/>
+		<result column="email_domain" property="emailDomain"/>
+		<result column="status" property="status"/>
+	</resultMap>
+
+	<resultMap type="fileInfoDto" id="file">
+		<result column="save_folder" property="saveFolder"/>
+		<result column="original_file" property="originalFile"/>
+		<result column="save_file" property="saveFile"/>
+	</resultMap>
+	
+	<!-- ADMIN -->
+	<resultMap type="userDto" id="userAll" extends="user">
+		<result column="user_id" property="userId"/>
+		<result column="user_name" property="userName"/>
+		<result column="email_id" property="emailId"/>
+		<result column="email_domain" property="emailDomain"/>
+	</resultMap>
+	
+	<select id="idCheck" parameterType="String" resultType="int">
+		select count(user_id)
+		from user
+		where user_id = #{userId}
+	</select>
+	
+	<insert id="signUp" parameterType="userDto">
+		insert into user (user_id, user_pwd, user_name, email_id, email_domain)
+		values (#{userId}, #{userPwd}, #{userName}, #{emailId}, #{emailDomain})
+	</insert>
+	
+	<select id="signIn" parameterType="map" resultMap="user">
+		select user_id, user_name
+		from user
+		where user_id = #{userId} and user_pwd = #{userPwd}
+	</select>
+	
+	<!-- ADMIN -->
+	<select id="listUser" resultMap="userAll">
+		select user_id, user_name, email_id, email_domain
+		from user
+		where user_id != 'admin'
+	</select>
+	
+	<sql id="usersearch">
+		<if test="key=='userId'">
+			and user_id like concat('%', #{word}, '%')
+		</if>
+		<if test="key=='userName'">
+			and user_name like concat('%', #{word}, '%')
+		</if>
+		<if test="key=='userEmail'">
+			and email_id like concat('%', #{word}, '%')
+		</if>
+	</sql>
+	
+	<select id="searchUser" parameterType="map" resultMap="userAll">
+		select user_id, user_name, email_id, email_domain
+		from user
+		where user_id != 'admin'
+		<include refid="usersearch"></include>
+	</select>
+
+	<select id="getUser" parameterType="string" resultMap="user">
+		select user_id, user_pwd, user_name, email_id, email_domain, status
+		from user
+		where user_id = #{userId}
+	</select>
+
+	<select id="findPwd" parameterType="string" resultType="string">
+		select user_pwd
+		from user
+		where user_id = #{userid} and email_id=#{emailid} and email_domain=#{emaildomain}
+	</select>
+
+	<select id="getImage" parameterType="string" resultMap="file">
+		select save_folder, save_file, original_file
+		from user
+		where user_id = #{userId}
+	</select>
+	
+	<update id="modify" parameterType="userDto">
+		update user
+		<trim prefix="set" suffixOverrides=",">
+			<if test="userPwd != null">user_pwd = #{userPwd},</if>
+			<if test="emailId != null">email_id = #{emailId},</if>
+			<if test="emailDomain != null">email_domain = #{emailDomain},</if>
+			<if test="status != null"> status = #{status},</if>
+		</trim>
+		where user_id = #{userId}
+	</update>
+	
+	<update id="setUserImage" parameterType="map">
+		update user
+		<trim prefix="set" suffixOverrides=",">
+			<if test="fileInfo.saveFolder != null">save_folder = #{fileInfo.saveFolder},</if>
+			<if test="fileInfo.saveFile != null">save_file = #{fileInfo.saveFile},</if>
+			<if test="fileInfo.originalFile != null">original_file = #{fileInfo.originalFile},</if>
+		</trim>
+		where user_id = #{userId}
+	</update>
+	
+	<update id="deleteUserImage" parameterType="string">
+		update user 
+		set save_folder = null, save_file = null, original_file = null
+		where user_id = #{userId}
+	</update>
+	
+	<delete id="deleteUser" parameterType="string">
+		delete from user
+		where user_id = #{userId}
+	</delete>
+	
+	<select id="getRefreshToken" parameterType="string" resultType="string">
+		select token
+		from user
+		where user_id = #{user_id}
+	</select>
+	
+	<update id="saveRefreshToken" parameterType="map">
+		update user
+		set token = #{token}
+		where user_id = #{user_id}
+	</update>
+	
+	<update id="deleteRefreshToken" parameterType="map">
+		update user
+		set token = #{token, jdbcType=VARCHAR}
+		where user_id = #{user_id}
+	</update>
+
+	<select id="login" parameterType="userDto" resultMap="user">
+		select user_id, user_name, email_id, email_domain
+		from user
+		where user_id = #{userId} and user_pwd = #{userPwd}
+	</select>
+
+</mapper>

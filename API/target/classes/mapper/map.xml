@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	
+<mapper namespace="com.ssafy.trip.map.model.mapper.MapMapper">
+	<resultMap type="sidoDto" id="sido">
+		<result column="sido_code" property="sidoCode"/>
+		<result column="sido_name" property="sidoName"/>
+	</resultMap>
+	<resultMap type="gugunDto" id="gugun">
+		<result column="gugun_code" property="gugunCode"/>
+		<result column="gugun_name" property="gugunName"/>
+	</resultMap>
+	<resultMap type="markerDto" id="marker">
+		<result column="content_id" property="contentId"/>
+		<result column="content_type_id" property="contentTypeId"/>
+		<result column="title" property="title"/>
+		<result column="addr1" property="addr1"/>
+		<result column="addr2" property="addr2"/>
+		<result column="first_image" property="firstImage"/>
+		<result column="readcount" property="readcount"/>
+		<result column="latitude" property="latitude"/>
+		<result column="longitude" property="longitude"/>
+		<result column="overview" property="overview"/>
+	</resultMap>
+	
+	<select id="getSido" resultMap="sido">
+		select *
+		from sido
+	</select>
+	
+	<select id="getGugun" parameterType="map" resultMap="gugun">
+		select gugun_code, gugun_name
+		from gugun
+		where sido_code=#{sidoCode}
+	</select>
+	
+	<sql id="search">
+		<if test="areaarea != null and areaarea !=''">
+			and gugun_code=#{areaarea}
+		</if>
+		<if test="type != null and type !=''">
+			and content_type_id=#{type}
+		</if>
+	</sql>
+	
+	<select id="getMarker" parameterType="map" resultMap="marker">
+		select content_id, content_type_id, title, addr1, addr2, first_image, readcount, latitude, longitude
+		from attraction_info
+		where sido_code=#{area}
+		<include refid="search"></include>
+	</select>
+	
+	<update id="updateSido" parameterType="int">
+		update sido set cnt = (
+			select cnt from (
+				select s.cnt from sido s where s.sido_code=#{area}
+			)main
+		)+1 where sido_code = #{area};
+	</update>
+	
+	<update id="updateGugun" parameterType="int">
+		update gugun set cnt = (
+			select cnt from (
+				select s.cnt from gugun s where s.gugun_code=#{areaarea} and s.sido_code=#{area}
+			)main
+		)+1 where gugun_code = #{areaarea} and sido_code=#{area};
+	</update>
+	
+	<update id="updateContentType" parameterType="int">
+		update content_type set cnt = (
+			select cnt from (
+				select s.cnt from content_type s where s.content_type_id=#{type}
+			)main
+		)+1 where content_type_id = #{type};
+	</update>
+	
+	<insert id="addStar" parameterType="starDto">
+		insert into star (title_idx, content_id)
+		value((select idx from stargroup where user_id=#{userId} and group_title=#{title}),#{contentId});
+	</insert>
+	
+	<select id="getStar" parameterType="map" resultMap="marker">
+		select a.content_id, a.content_type_id, a.title, a.addr1, a.addr2, a.first_image, a.readcount, a.latitude, a.longitude
+		from attraction_info as a join star as c on a.content_id = c.content_id
+			join stargroup as s on c.title_idx = s.idx
+		where s.user_id=#{userId} and group_title=#{title}
+	</select>
+	
+	<delete id="deleteStar" parameterType="string">
+		delete from star
+		where content_id=#{contentId} and title_idx=(select idx from stargroup where user_id=#{userId} and group_title=#{title});
+	</delete>
+	
+	<select id="getGroup" resultType="string">
+		select group_title
+		from stargroup
+		where user_id=#{userId}
+	</select>
+	
+	<delete id="deleteGroup" parameterType="string">
+		delete from stargroup
+		where user_id=#{userId} and group_title=#{title};
+	</delete>
+	
+	<insert id="createGroup" parameterType="map">
+		insert into stargroup (user_id, group_title)
+		value(#{userId}, #{title})
+	</insert>
+	
+	<select id="getDetail" resultMap="marker">
+		select ad.overview, ai.content_id, ai.content_type_id, ai.title, ai.addr1, ai.addr2, ai.first_image, ai.readcount, ai.latitude, ai.longitude
+		from attraction_description as ad join attraction_info as ai on ad.content_id=ai.content_id
+		where ad.content_id=#{contentId};
+	</select>
+	
+</mapper>
