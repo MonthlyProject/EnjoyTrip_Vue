@@ -111,7 +111,7 @@
       loadScript() {
         const script = document.createElement("script");
         script.src =
-          "//dapi.kakao.com/v2/maps/sdk.js?appkey=54bc1b9c7746df1f03acaf0a07564944&autoload=false";
+          "//dapi.kakao.com/v2/maps/sdk.js?appkey=kakaokey&autoload=false";
         script.onload = () => window.kakao.maps.load(this.loadMap);
         document.head.appendChild(script);
       },
