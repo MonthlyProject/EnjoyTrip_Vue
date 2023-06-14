@@ -47,7 +47,7 @@
 			<!-- kakao map start -->
 			<div id="map" class="mt-3" style="width: 100%; height: 550px">
 				<script type="text/javascript"
-					src="//dapi.kakao.com/v2/maps/sdk.js?appkey=54bc1b9c7746df1f03acaf0a07564944"></script>
+					src="//dapi.kakao.com/v2/maps/sdk.js?appkey=kakaokey"></script>
 			</div>
 			<!-- kakao map end -->
 
@@ -70,7 +70,7 @@
 	<%@ include file="/WEB-INF/views/include/jsinclude.jsp"%>
 
 	<script type="text/javascript"
-		src="//dapi.kakao.com/v2/maps/sdk.js?appkey=54963ba8b27648e7471f4438db6499e7&libraries=services,clusterer,drawing"></script>
+		src="//dapi.kakao.com/v2/maps/sdk.js?appkey=kakaokey&libraries=services,clusterer,drawing"></script>
 	<script type="module" src="/assets/js/map.js"></script>
 
 </body>
